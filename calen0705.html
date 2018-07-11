@@ -1,0 +1,449 @@
+<!DOCTYPE HTML>
+<html>
+
+<head>
+    <meta charset="UTF-8">
+    <meta content="width=device-width,minimum-scale=1.0,maximum-scale=1.0,user-scalable=no" name="viewport" />
+    <script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+    <title>营销日历</title>
+    <style>
+    [v-cloak] { display: none !important;}
+    *{margin:0; padding:0;}
+    ul,li{ list-style:none;}
+    table{ border-spacing:0 }
+    .charttit{height:70px;line-height:70px;position:relative;}
+    .charttit>div:nth-child(1){display:inline-block;}
+    .charttit>div:nth-child(1)>span{font-size:14px;vertical-align:middle;}
+    .charttit>div:nth-child(1)>span:nth-child(1){display:inline-block; width:4px;height:14px;background:#999;margin-right:6px;margin-left:30px;}
+    .charttit>div:nth-child(2){float:right;display:inline-block;margin-right:30px;}
+    #marketing-activity-calendar{ height:100%; }
+    #marketing-activity-calendar .main{ padding:0 30px 30px 229px; position:relative; font-size:16px; }
+    #marketing-activity-calendar .main .tabCon{ position:absolute; left:0; top:0; width:199px; height:100%; border:1px solid #e8e8e8; }
+    #marketing-activity-calendar .main .tabCon .title{ border-bottom:1px solid #e8e8e8; height:65px; line-height:65px; padding:0 15px; }
+    #marketing-activity-calendar .main .tabCon ul{ padding:15px; }
+    #marketing-activity-calendar .main .tabCon ul li{ margin:20px 0; cursor:pointer; vertical-align:middle;}
+    #marketing-activity-calendar .main .tabCon ul li span{ display:inline-block; vertical-align:middle; font-size:13px; height:18px; width:18px; line-height:18px; text-align:center; margin-right:9px; background:#e8e8e8; border-radius:50%; }
+    #marketing-activity-calendar .main .tabCon ul li.active span{ color:#fff; background:#F98F1F }
+    #marketing-activity-calendar .main .tabCon ul li.active{ color:#F98F1F }
+    #marketing-activity-calendar .main .infoCon .h-title{ height:85px; line-height:85px; font-size:20px;  }
+    #marketing-activity-calendar .main .infoCon .calendar{ border:1px solid #e8e8e8; border-radius:5px; padding-bottom:30px;}
+    #marketing-activity-calendar .main .infoCon .calendar table{ width:100%;}
+    #marketing-activity-calendar .main .infoCon .calendar td, #marketing-activity-calendar .main .infoCon .calendar th{ text-align:center; font-size:22px; font-weight:normal;}
+    #marketing-activity-calendar .main .infoCon .calendar td{ color:#ccc; }
+    #marketing-activity-calendar .main .infoCon .calendar td.isCurMonth{ color:#333; }
+    #marketing-activity-calendar .main .infoCon .calendar td.inRange div{ background:#F5F6FF; position:relative; height:74px; }
+    #marketing-activity-calendar .main .infoCon .calendar td.inRange.startDate div:before{ content:''; display:inline-block; width:50%; left:0; height:74px; position:absolute; background:#fff;}
+    #marketing-activity-calendar .main .infoCon .calendar td.inRange.endDate div:before{ content:''; display:inline-block; width:50%; right:0; height:74px; position:absolute; background:#fff;}
+    #marketing-activity-calendar .main .infoCon .calendar td.inRange.startDate div span{ background:#D1D8FE; border-radius:50%;  z-index:100; position:absolute; left:50%; margin-left:-37px;}
+    #marketing-activity-calendar .main .infoCon .calendar td.inRange.endDate div span{ background:#D1D8FE; border-radius:50%; z-index:100; position:absolute; left:50%; margin-left:-37px; }
+    #marketing-activity-calendar .main .infoCon .calendar td span, #marketing-activity-calendar .main .infoCon .calendar th span{display:inline-block; height:74px; line-height:74px; width:74px;}
+    #marketing-activity-calendar .main .infoCon .calendar td.isExculde div{ background:#FFF; }
+    #marketing-activity-calendar .main .infoCon .chart{ border:1px solid #e8e8e8; border-radius:5px; height:480px; padding-bottom:30px; }
+    #marketing-activity-calendar .main .infoCon tbody tr div{ margin:15px 0;}
+    .charttit .switch{ float:right; margin-right:30px; font-size:18px; color:#999; cursor:pointer; text-decoration:none; }
+    .charttit .prev:before{content:'\e600'; font-family:'iconfont'; margin-right:6px; color:#999; cursor:pointer;}
+    .charttit .next:after{content:'\e601'; font-family:'iconfont'; margin-left:6px; color:#999; cursor:pointer;}
+    .charttit .switch .month{ color:#333; margin-left:5px;}
+
+    </style>
+</head>
+
+<body class="fold">
+    <!-- 内容区域 -->
+    <div id="content">
+        <div id="marketing-activity-calendar">
+            <div class="main">
+                <div class="tabCon">
+                    <p class="title">活动名称</p>
+                    <ul class="nameList">
+                        <li class="name active">充值活动</li>
+                        <li class="name">充值活动2</li>
+                        <li class="name">充值活动3</li>
+                        <li class="name">充值活动4</li>
+                        <li class="name">充值活动5</li>
+                    </ul>
+                </div>
+                <div class="infoCon">
+                    <p class="h-title">活动日历</p>
+                    <div class="calendar" id="calendar" v-cloak>
+                        <div class="charttit">
+                            <div><span></span><span>日历图表</span></div>
+                            <a class="switch">
+                                <span class="prev" @click="prevMonth"></span>
+                                <span class="year">{{curYear}}年</span><span class="month">{{curMonth}}月</span>
+                                <span class="next" @click="nextMonth"></span>
+                            </a>
+                        </div>
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th><span>周日</span></th>
+                                    <th><span>周一</span></th>
+                                    <th><span>周二</span></th>
+                                    <th><span>周三</span></th>
+                                    <th><span>周四</span></th>
+                                    <th><span>周五</span></th>
+                                    <th><span>周六</span></th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td :class="{inRange:calendar[0].inRange, startDate:calendar[0].startDate, endDDate:calendar[0].endDate, isCurMonth:calendar[0].isCurMonth, isExculde:calendar[0].isExculde}">
+                                        <div><span>{{calendar[0].val}}</span></div>
+                                    </td>
+                                    <td :class="{inRange:calendar[1].inRange, startDate:calendar[1].startDate, endDDate:calendar[1].endDate, isCurMonth:calendar[1].isCurMonth, isExculde:calendar[1].isExculde}">
+                                        <div><span>{{calendar[1].val}}</span></div>
+                                    </td>
+                                    <td :class="{inRange:calendar[2].inRange, startDate:calendar[2].startDate, endDDate:calendar[2].endDate, isCurMonth:calendar[2].isCurMonth, isExculde:calendar[2].isExculde}">
+                                        <div><span>{{calendar[2].val}}</span></div>
+                                    </td>
+                                    <td :class="{inRange:calendar[3].inRange, startDate:calendar[3].startDate, endDDate:calendar[3].endDate, isCurMonth:calendar[3].isCurMonth, isExculde:calendar[3].isExculde}">
+                                        <div><span>{{calendar[3].val}}</span></div>
+                                    </td>
+                                    <td :class="{inRange:calendar[4].inRange, startDate:calendar[4].startDate, endDDate:calendar[4].endDate, isCurMonth:calendar[4].isCurMonth, isExculde:calendar[4].isExculde}">
+                                        <div><span>{{calendar[4].val}}</span></div>
+                                    </td>
+                                    <td :class="{inRange:calendar[5].inRange, startDate:calendar[5].startDate, endDDate:calendar[5].endDate, isCurMonth:calendar[5].isCurMonth, isExculde:calendar[5].isExculde}">
+                                        <div><span>{{calendar[5].val}}</span></div>
+                                    </td>
+                                    <td :class="{inRange:calendar[6].inRange, startDate:calendar[6].startDate, endDDate:calendar[6].endDate, isCurMonth:calendar[6].isCurMonth, isExculde:calendar[6].isExculde}">
+                                        <div><span>{{calendar[6].val}}</span></div>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td :class="{inRange:calendar[7].inRange, startDate:calendar[7].startDate, endDDate:calendar[7].endDate, isCurMonth:calendar[7].isCurMonth, isExculde:calendar[7].isExculde}">
+                                        <div><span>{{calendar[7].val}}</span></td>
+                                    <td :class="{inRange:calendar[8].inRange, startDate:calendar[8].startDate, endDDate:calendar[8].endDate, isCurMonth:calendar[8].isCurMonth, isExculde:calendar[8].isExculde}">
+                                        <div><span>{{calendar[8].val}}</span></div>
+                                    </td>
+                                    <td :class="{inRange:calendar[9].inRange, startDate:calendar[9].startDate, endDDate:calendar[9].endDate, isCurMonth:calendar[9].isCurMonth, isExculde:calendar[9].isExculde}">
+                                        <div><span>{{calendar[9].val}}</span></div>
+                                    </td>
+                                    <td :class="{inRange:calendar[10].inRange,startDate:calendar[10].startDate, endDate:calendar[10].endDate, isCurMonth:calendar[10].isCurMonth, isExculde:calendar[10].isExculde}">
+                                        <div><span>{{calendar[10].val}}</span></div>
+                                    </td>
+                                    <td :class="{inRange:calendar[11].inRange,startDate:calendar[11].startDate, endDate:calendar[11].endDate, isCurMonth:calendar[11].isCurMonth, isExculde:calendar[11].isExculde}">
+                                        <div><span>{{calendar[11].val}}</span></div>
+                                    </td>
+                                    <td :class="{inRange:calendar[12].inRange,startDate:calendar[12].startDate, endDate:calendar[12].endDate, isCurMonth:calendar[12].isCurMonth, isExculde:calendar[12].isExculde}">
+                                        <div><span>{{calendar[12].val}}</span></div>
+                                    </td>
+                                    <td :class="{inRange:calendar[13].inRange,startDate:calendar[13].startDate, endDate:calendar[13].endDate, isCurMonth:calendar[13].isCurMonth, isExculde:calendar[13].isExculde}">
+                                        <div><span>{{calendar[13].val}}</span></div>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td :class="{inRange:calendar[14].inRange,startDate:calendar[14].startDate, endDate:calendar[14].endDate, isCurMonth:calendar[14].isCurMonth, isExculde:calendar[14].isExculde}">
+                                        <div><span>{{calendar[14].val}}</span></div>
+                                    </td>
+                                    <td :class="{inRange:calendar[15].inRange,startDate:calendar[15].startDate, endDate:calendar[15].endDate, isCurMonth:calendar[15].isCurMonth, isExculde:calendar[15].isExculde}">
+                                        <div><span>{{calendar[15].val}}</span></div>
+                                    </td>
+                                    <td :class="{inRange:calendar[16].inRange,startDate:calendar[16].startDate, endDate:calendar[16].endDate, isCurMonth:calendar[16].isCurMonth, isExculde:calendar[16].isExculde}">
+                                        <div><span>{{calendar[16].val}}</span></div>
+                                    </td>
+                                    <td :class="{inRange:calendar[17].inRange,startDate:calendar[17].startDate, endDate:calendar[17].endDate, isCurMonth:calendar[17].isCurMonth, isExculde:calendar[17].isExculde}">
+                                        <div><span>{{calendar[17].val}}</span></div>
+                                    </td>
+                                    <td :class="{inRange:calendar[18].inRange,startDate:calendar[18].startDate, endDate:calendar[18].endDate, isCurMonth:calendar[18].isCurMonth, isExculde:calendar[18].isExculde}">
+                                        <div><span>{{calendar[18].val}}</span></div>
+                                    </td>
+                                    <td :class="{inRange:calendar[19].inRange,startDate:calendar[19].startDate, endDate:calendar[19].endDate, isCurMonth:calendar[19].isCurMonth, isExculde:calendar[19].isExculde}">
+                                        <div><span>{{calendar[19].val}}</span></div>
+                                    </td>
+                                    <td :class="{inRange:calendar[20].inRange,startDate:calendar[20].startDate, endDate:calendar[20].endDate, isCurMonth:calendar[20].isCurMonth, isExculde:calendar[20].isExculde}">
+                                        <div><span>{{calendar[20].val}}</span></div>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td :class="{inRange:calendar[21].inRange,startDate:calendar[21].startDate, endDate:calendar[21].endDate, isCurMonth:calendar[21].isCurMonth, isExculde:calendar[21].isExculde}">
+                                        <div><span>{{calendar[21].val}}</span></div>
+                                    </td>
+                                    <td :class="{inRange:calendar[22].inRange,startDate:calendar[22].startDate, endDate:calendar[22].endDate, isCurMonth:calendar[22].isCurMonth, isExculde:calendar[22].isExculde}">
+                                        <div><span>{{calendar[22].val}}</span></div>
+                                    </td>
+                                    <td :class="{inRange:calendar[23].inRange,startDate:calendar[23].startDate, endDate:calendar[23].endDate, isCurMonth:calendar[23].isCurMonth, isExculde:calendar[23].isExculde}">
+                                        <div><span>{{calendar[23].val}}</span></div>
+                                    </td>
+                                    <td :class="{inRange:calendar[24].inRange,startDate:calendar[24].startDate, endDate:calendar[24].endDate, isCurMonth:calendar[24].isCurMonth, isExculde:calendar[24].isExculde}">
+                                        <div><span>{{calendar[24].val}}</span></div>
+                                    </td>
+                                    <td :class="{inRange:calendar[25].inRange,startDate:calendar[25].startDate, endDate:calendar[25].endDate, isCurMonth:calendar[25].isCurMonth, isExculde:calendar[25].isExculde}">
+                                        <div><span>{{calendar[25].val}}</span></div>
+                                    </td>
+                                    <td :class="{inRange:calendar[26].inRange,startDate:calendar[26].startDate, endDate:calendar[26].endDate, isCurMonth:calendar[26].isCurMonth, isExculde:calendar[26].isExculde}">
+                                        <div><span>{{calendar[26].val}}</span></div>
+                                    </td>
+                                    <td :class="{inRange:calendar[27].inRange,startDate:calendar[27].startDate, endDate:calendar[27].endDate, isCurMonth:calendar[27].isCurMonth, isExculde:calendar[27].isExculde}">
+                                        <div><span>{{calendar[27].val}}</span></div>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td :class="{inRange:calendar[28].inRange,startDate:calendar[28].startDate, endDate:calendar[28].endDate, isCurMonth:calendar[28].isCurMonth, isExculde:calendar[28].isExculde}">
+                                        <div><span>{{calendar[28].val}}</span></div>
+                                    </td>
+                                    <td :class="{inRange:calendar[29].inRange,startDate:calendar[29].startDate, endDate:calendar[29].endDate, isCurMonth:calendar[29].isCurMonth, isExculde:calendar[29].isExculde}">
+                                        <div><span>{{calendar[29].val}}</span></div>
+                                    </td>
+                                    <td :class="{inRange:calendar[30].inRange,startDate:calendar[30].startDate, endDate:calendar[30].endDate, isCurMonth:calendar[30].isCurMonth, isExculde:calendar[30].isExculde}">
+                                        <div><span>{{calendar[30].val}}</span></div>
+                                    </td>
+                                    <td :class="{inRange:calendar[31].inRange,startDate:calendar[31].startDate, endDate:calendar[31].endDate, isCurMonth:calendar[31].isCurMonth, isExculde:calendar[31].isExculde}">
+                                        <div><span>{{calendar[31].val}}</span></div>
+                                    </td>
+                                    <td :class="{inRange:calendar[32].inRange,startDate:calendar[32].startDate, endDate:calendar[32].endDate, isCurMonth:calendar[32].isCurMonth, isExculde:calendar[32].isExculde}">
+                                        <div><span>{{calendar[32].val}}</span></div>
+                                    </td>
+                                    <td :class="{inRange:calendar[33].inRange,startDate:calendar[33].startDate, endDate:calendar[33].endDate, isCurMonth:calendar[33].isCurMonth, isExculde:calendar[33].isExculde}">
+                                        <div><span>{{calendar[33].val}}</span></div>
+                                    </td>
+                                    <td :class="{inRange:calendar[34].inRange,startDate:calendar[34].startDate, endDate:calendar[34].endDate, isCurMonth:calendar[34].isCurMonth, isExculde:calendar[34].isExculde}">
+                                        <div><span>{{calendar[34].val}}</span></div>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td :class="{inRange:calendar[35].inRange,startDate:calendar[35].startDate, endDate:calendar[35].endDate, isCurMonth:calendar[35].isCurMonth, isExculde:calendar[35].isExculde}">
+                                        <div><span>{{calendar[35].val}}</span></div>
+                                    </td>
+                                    <td :class="{inRange:calendar[36].inRange,startDate:calendar[36].startDate, endDate:calendar[36].endDate, isCurMonth:calendar[36].isCurMonth, isExculde:calendar[36].isExculde}">
+                                        <div><span>{{calendar[36].val}}</span></div>
+                                    </td>
+                                    <td :class="{inRange:calendar[37].inRange,startDate:calendar[37].startDate, endDate:calendar[37].endDate, isCurMonth:calendar[37].isCurMonth, isExculde:calendar[37].isExculde}">
+                                        <div><span>{{calendar[37].val}}</span></div>
+                                    </td>
+                                    <td :class="{inRange:calendar[38].inRange,startDate:calendar[38].startDate, endDate:calendar[38].endDate, isCurMonth:calendar[38].isCurMonth, isExculde:calendar[38].isExculde}">
+                                        <div><span>{{calendar[38].val}}</span></div>
+                                    </td>
+                                    <td :class="{inRange:calendar[39].inRange,startDate:calendar[39].startDate, endDate:calendar[39].endDate, isCurMonth:calendar[39].isCurMonth, isExculde:calendar[39].isExculde}">
+                                        <div><span>{{calendar[39].val}}</span></div>
+                                    </td>
+                                    <td :class="{inRange:calendar[40].inRange,startDate:calendar[40].startDate, endDate:calendar[40].endDate, isCurMonth:calendar[40].isCurMonth, isExculde:calendar[40].isExculde}">
+                                        <div><span>{{calendar[40].val}}</span></div>
+                                    </td>
+                                    <td :class="{inRange:calendar[41].inRange,startDate:calendar[41].startDate, endDate:calendar[41].endDate, isCurMonth:calendar[41].isCurMonth, isExculde:calendar[41].isExculde}">
+                                        <div><span>{{calendar[41].val}}</span></div>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+</body>
+<script>
+
+    //判断闰年
+function runNian(_year) {
+    if (_year % 400 === 0 || (_year % 4 === 0 && _year % 100 !== 0)) {
+        return true;
+    } else {
+        return false;
+    }
+}
+
+//判断某年某月的1号是星期几
+function getFirstDay(_year, _month) {
+    var allDay = 0,
+        y = _year - 1,
+        i = 1;
+    allDay = y + Math.floor(y / 4) - Math.floor(y / 100) + Math.floor(y / 400) + 1;
+    for (; i < _month; i++) {
+        switch (i) {
+            case 1:
+                allDay += 31;
+                break;
+            case 2:
+                if (runNian(_year)) {
+                    allDay += 29;
+                } else {
+                    allDay += 28;
+                }
+                break;
+            case 3:
+                allDay += 31;
+                break;
+            case 4:
+                allDay += 30;
+                break;
+            case 5:
+                allDay += 31;
+                break;
+            case 6:
+                allDay += 30;
+                break;
+            case 7:
+                allDay += 31;
+                break;
+            case 8:
+                allDay += 31;
+                break;
+            case 9:
+                allDay += 30;
+                break;
+            case 10:
+                allDay += 31;
+                break;
+            case 11:
+                allDay += 30;
+                break;
+            case 12:
+                allDay += 31;
+                break;
+        }
+    }
+    return allDay % 7;
+}
+
+//某月多少天 
+function getMonthDay(_year, _month) {
+    var monthDay = 0
+    switch (_month) {
+        case 1:
+            monthDay = 31;
+            break;
+        case 2:
+            if (runNian(_year)) {
+                monthDay = 29;
+            } else {
+                monthDay = 28;
+            }
+            break;
+        case 3:
+            monthDay = 31;
+            break;
+        case 4:
+            monthDay = 30;
+            break;
+        case 5:
+            monthDay = 31;
+            break;
+        case 6:
+            monthDay = 30;
+            break;
+        case 7:
+            monthDay = 31;
+            break;
+        case 8:
+            monthDay = 31;
+            break;
+        case 9:
+            monthDay = 30;
+            break;
+        case 10:
+            monthDay = 31;
+            break;
+        case 11:
+            monthDay = 30;
+            break;
+        case 12:
+            monthDay = 31;
+            break;
+    }
+    return monthDay
+}
+
+    var date = new Date(),
+        dateRange = [{year:'2018',month:'5',startDay:'1',endDay:''},{year:'2018',month:'6',startDay:'',endDay:'25'},{year:'2018',month:'7',startDay:'2',endDay:'25'}]
+        _year = date.getFullYear(),
+        _month = date.getMonth() + 1
+
+    var vm = new Vue({
+        el:'#calendar',
+        data:{
+            curYear:'',         //年
+            curMonth:'',        //月
+            dateRange:''        //时间范围
+        },
+        mounted:function(){
+            var date = new Date()
+            this.curYear = date.getFullYear(),
+            this.curMonth = date.getMonth() + 1
+        },
+        computed:{
+            calendar:function(){
+                var year = this.curYear || _year,
+                    month = this.curMonth || _month,
+                    calendar = []
+                for(var i=0; i<42; i++) calendar.push({val:i})   
+
+                //当月日期数据
+                var firstDay = getFirstDay(year, month),
+                    monthDay = getMonthDay(year, month)
+                for(var j = 0; j<dateRange.length; j++){
+                    if(dateRange[j].year == year && dateRange[j].month == month){
+                        var startDay = dateRange[j].startDay
+                        var endDay = dateRange[j].endDay
+                        if(startDay==""){
+                            startDay = 1
+                            var startDayNoFlag = true
+                        }
+                        if(endDay==""){
+                            endDay = monthDay
+                            var endDayNoFlag = true
+                        }
+                    }
+                }
+
+                for (var i = 0; i < monthDay; i++) {
+                    var val = i + 1
+                    if(val >= startDay && val <= endDay) calendar[firstDay + i].inRange = true
+                    if(val== startDay) calendar[firstDay + i].startDate = true 
+                    if(val == endDay) calendar[firstDay + i].endDate = true
+                    if(startDayNoFlag){ calendar[firstDay + i].startDate = false }
+                    if(endDayNoFlag){ calendar[firstDay + i].endDate = false }
+
+                    calendar[firstDay + i].val = val
+                    calendar[firstDay + i].isCurMonth = true
+                }
+                //前一个月的日期数据
+                if (month == 1) {
+                    prevmonth = 12
+                    year = year - 1
+                } else {
+                    prevmonth = month - 1
+                }
+                var monthDay = getMonthDay(year, prevmonth)
+                for (var i = 0; i < firstDay; i++) {
+                    var val =  monthDay - firstDay + i + 1
+                    calendar[i].val = val
+                }
+
+                //下一个月日期数据
+                var monthDay = getMonthDay(year, month)
+                var days = monthDay + firstDay
+                console.log(monthDay,firstDay)
+                for (var i = 0; i < 42 - days; i++) {
+                    var val = i + 1
+                    calendar[days + i].val = i + 1
+                }
+                return calendar
+            }
+        },
+        methods:{
+            prevMonth:function(){
+                var curMonth = this.curMonth,
+                    curYear =  this.curYear
+                if ( curMonth == 1) {
+                    this.curMonth = 12
+                    this.curYear = curYear - 1
+                } else {
+                    this.curMonth = curMonth -1
+                }
+            },
+            nextMonth:function(){
+                var curMonth = this.curMonth,
+                    curYear =  this.curYear
+                if ( curMonth == 12) {
+                    this.curMonth = 1
+                    this.curYear = curYear + 1
+                } else {
+                    this.curMonth = curMonth + 1
+                }
+            }
+        }
+    })
+</script>
+
+</html>
