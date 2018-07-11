@@ -57,7 +57,7 @@
                 <div class="tabCon">
                     <p class="title">活动名称</p>
                     <ul class="nameList">
-                        <li data-range="2018-01-10至2018-02-10" data-days="[0,6]" class="name active">充值活动</li>
+                        <li data-range="2017-11-10至2018-02-10" data-days="[0,6]" class="name active">充值活动</li>
                         <li data-range="2018-03-10至2018-04-11" data-days="[0]" class="name">充值活动2</li>
                         <li data-range="2018-05-31至2018-06-20" data-days="[0,6]" class="name">充值活动3</li>
                         <li data-range="2018-06-20至2018-07-13" data-days="[0,6]" class="name">充值活动4</li>
@@ -414,10 +414,47 @@ function dateRange(range, excludeDay) {
             singleData.excludeDay = excludeDay
             dateRange.push(singleData)
         }
+    }else{
+        var startYear = startDate.year
+        var endYear = endDate.year
+        var startMonth = startDate.month
+        var endMonth = endDate.month
+        singleData = {}
+        singleData.year = startDate.year
+        singleData.month = startDate.month
+        singleData.startDay = startDate.day
+        singleData.endDay = ''
+        singleData.excludeDay = excludeDay
+        dateRange.push(singleData)
+        for(var i=0; i<12-startMonth; i++){
+            singleData = {}
+            singleData.year = startDate.year
+            singleData.month = startDate.month+1
+            singleData.startDay = ''
+            singleData.endDay = ''
+            singleData.excludeDay = excludeDay
+            dateRange.push(singleData)
+        }
+        for(var i=0; i<endMonth-1; i++){
+            singleData = {}
+            singleData.year = endDate.year
+            singleData.month = endDate.month-1
+            singleData.startDay = ''
+            singleData.endDay = ''
+            singleData.excludeDay = excludeDay
+            dateRange.push(singleData)
+        }
+        singleData = {}
+        singleData.year = endDate.year
+        singleData.month = endDate.month
+        singleData.startDay = ''
+        singleData.endDay = endDate.day
+        singleData.excludeDay = excludeDay
+        dateRange.push(singleData)
+
     }
     return dateRange
 }
-
 //初始值
 var range = $(".nameList .name,active").data("range"),
     excludeDays = $(".nameList .name,active").data("days")
