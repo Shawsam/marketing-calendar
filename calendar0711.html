@@ -345,10 +345,11 @@ function getMonthDay(_year, _month) {
 }
 function parseStartDate(date,excludeDay) {
     var dateObj = {}      
-    var _day =  new Date(date).getDay()                //星期几
     var excludeDay = excludeDay.join(',')
-    if (excludeDay.indexOf(_day) != -1) {
+    var _day =  new Date(date).getDay()                              //起始日期是星期几
+    while (excludeDay.indexOf(_day) != -1){
         var date = new Date(new Date(date).getTime()+24*60*60*1000)  //后一天 
+        _day = new Date(date).getDay()
     }
     dateObj.year = new Date(date).getFullYear()
     dateObj.month = new Date(date).getMonth() + 1
@@ -358,10 +359,12 @@ function parseStartDate(date,excludeDay) {
 
 function parseEndDate(date,excludeDay) {
     var dateObj = {}
-    var _day =  new Date(date).getDay()                //星期几
+    var _day =  new Date(date).getDay()                               //星期几
     var excludeDay = excludeDay.join(',')
-    if (excludeDay.indexOf(_day) != -1) {
-        var date = new Date(new Date(date).getTime()-24*60*60*1000)  //后一天 
+    console.log(excludeDay.indexOf(_day))
+    while(excludeDay.indexOf(_day) != -1) {
+        var date = new Date(new Date(date).getTime()-24*60*60*1000)  //前一天
+        _day = new Date(date).getDay()
     }
     dateObj.year = new Date(date).getFullYear()
     dateObj.month = new Date(date).getMonth() + 1
@@ -516,9 +519,6 @@ var vm = new Vue({
             } else {
                 this.curMonth = curMonth + 1
             }
-        },
-        activitySwitch:function(){
-
         }
     }
 })
